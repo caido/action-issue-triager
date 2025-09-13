@@ -1,10 +1,10 @@
 import { Agent } from "@mastra/core/agent";
 import { openai } from "@ai-sdk/openai";
-import { getIssueTool, addLabelsTool, assignToProjectTool, getRepositoryLabelsTool } from "../tools/github-tools";
 import { PromptInjectionDetector } from "@mastra/core/processors";
+import { GitHubIssue, GitHubLabel } from "../../types";
 
 
-export const issueTriagerAgent = new Agent({
+export const triagerAgent = new Agent({
   name: "GitHub Issue Triager Agent",
   instructions: `ROLE DEFINITION
 - You are a GitHub issue triaging assistant that helps analyze and categorize GitHub issues.
@@ -41,8 +41,42 @@ SUCCESS CRITERIA
 - Maintain organized and searchable issue repositories.
 - Provide clear explanations for all triaging decisions.`,
   model: openai("gpt-5-nano"),
-  tools: { getIssueTool, addLabelsTool, assignToProjectTool, getRepositoryLabelsTool },
+  tools: { },
   inputProcessors: [new PromptInjectionDetector({
     model: openai("gpt-5-nano"),
   })],
 });
+
+/**
+ * Builds a comprehensive prompt for the issue triager agent
+ * @param issue - The GitHub issue data
+ * @param availableLabels - Array of available repository labels
+ * @param owner - Repository owner
+ * @param repo - Repository name
+ * @returns Formatted prompt string
+ */
+export function buildTriagePrompt(
+  issue: GitHubIssue,
+  availableLabels: GitHubLabel[],
+): string {
+  // Format the available labels for the agent
+  const labelsList = availableLabels.map(label => 
+    `- ${label.name}${label.description ? `: ${label.description}` : ''}`
+  ).join('\n');
+  
+  return `
+Provide recommended labels to add to the issue (choose from the available labels in the repository)
+
+**Issue Details:**
+- Repository: ${issue.reference.owner}/${issue.reference.repo}
+- Issue #${issue.reference.number}: ${issue.title}
+- Current Labels: ${issue.labels.map(l => l.name).join(', ') || 'None'}
+
+**Issue Description:**
+${issue.body || 'No description provided'}
+
+**Available Labels in Repository:**
+${labelsList}
+
+`
+}
