@@ -61,13 +61,15 @@ export async function run(): Promise<void> {
       if (result.result.success) {
         // Log results
         core.info(`Successfully triaged issue #${issueReference.number}`);
-        core.summary.addHeading(`Triage Summary`);
-        core.summary.addRaw(`Issue #${issueReference.number}`, true);
-        core.summary.addRaw(`Repository: ${issueReference.owner}/${issueReference.repo}`, true);
-        core.summary.addRaw(`Recommended labels:`, true);
+        const summary = core.summary.emptyBuffer();
+        summary.addHeading(`Triage Summary`);
+        summary.addRaw(`Issue #${issueReference.number}`, true);
+        summary.addRaw(`Repository: ${issueReference.owner}/${issueReference.repo}`, true);
+        summary.addRaw(`Recommended labels:`, true);
         for (const label of result.result.labels) {
-          core.summary.addRaw(`- ${label.name} - ${label.reason}`, true);
+          summary.addRaw(`- ${label.name} - ${label.reason}`, true);
         }
+        summary.write();
       } else {
         core.error(`Failed to triage issue #${issueReference.number}: ${result.result.message}`);
       }
