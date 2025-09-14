@@ -5,6 +5,8 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "dev": "mastra dev",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint src/**/*.ts --fix",
     "build": "rm -rf dist && ncc build src/index.ts -o dist",
     "start": "mastra start"
   },
@@ -29,10 +31,12 @@
     "zod": "3.25.76"
   },
   "devDependencies": {
+    "@caido/eslint-config": "0.6.0",
     "@types/node": "24.3.1",
     "mastra": "0.12.3",
     "tsdown": "0.15.1",
     "@vercel/ncc": "0.38.3",
-    "typescript": "5.9.2"
+    "typescript": "5.8.3",
+    "eslint": "9.28.0"
   }
 }
