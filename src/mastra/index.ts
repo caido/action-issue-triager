@@ -2,13 +2,16 @@
 import { Mastra } from '@mastra/core/mastra';
 import { PinoLogger } from '@mastra/loggers';
 import { LibSQLStore } from '@mastra/libsql';
-import { issueTriagerWorkflow } from './workflows/triage-issue';
+import { createTriageIssueWorkflow } from './workflows/triage-issue';
 import { createTriagerAgent } from './agents/triager';
-import { buildSystemPrompt } from './agents/triager.prompt';
+import { defaultSystemPrompt } from './agents/triager.prompt';
+
+const issueTriagerAgent = createTriagerAgent({ systemPrompt: defaultSystemPrompt() });
+const issueTriagerWorkflow = createTriageIssueWorkflow({ triagerAgent: issueTriagerAgent });
 
 export const mastra = new Mastra({
   workflows: { issueTriagerWorkflow },
-  agents: { issueTriagerAgent: createTriagerAgent({ prompt: buildSystemPrompt() }) },
+  agents: { issueTriagerAgent },
   storage: new LibSQLStore({
     // stores telemetry, evals, ... into memory storage, if it needs to persist, change to file:../mastra.db
     url: ":memory:",

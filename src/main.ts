@@ -5,17 +5,19 @@ import * as path from 'path';
 import { Mastra } from '@mastra/core/mastra';
 import { PinoLogger } from '@mastra/loggers';
 import { LibSQLStore } from '@mastra/libsql';
-import { issueTriagerWorkflow } from './mastra/workflows/triage-issue';
+import { createTriageIssueWorkflow } from './mastra/workflows/triage-issue';
 import { createTriagerAgent } from './mastra/agents/triager';
-import { buildSystemPrompt } from './mastra/agents/triager.prompt';
 import { GithubIssueReference } from './types';
 
-async function run(): Promise<void> {
+export async function run(): Promise<void> {
   try {
     // Get inputs
     const openaiKey = core.getInput('openai-key', { required: true });
     const systemPromptFile = core.getInput('system-prompt-file', { required: true });
     const issueNumber = core.getInput('issue-number');
+
+    // Set OpenAI API key
+    process.env.OPENAI_API_KEY = openaiKey;
 
     // Validate system prompt file exists
     if (!fs.existsSync(systemPromptFile)) {
@@ -25,28 +27,11 @@ async function run(): Promise<void> {
     // Read system prompt
     const systemPrompt = fs.readFileSync(systemPromptFile, 'utf8');
     
-    // Create the agent with the custom system prompt
-    const triagerAgent = createTriagerAgent({ prompt: systemPrompt });
-
-    // Set OpenAI API key
-    process.env.OPENAI_API_KEY = openaiKey;
-
-    // Determine issue reference
-    let issueReference: GithubIssueReference;
-    
-    // Use current issue from context
-    issueReference = {
-        owner: github.context.repo.owner,
-        repo: github.context.repo.repo,
-        number: parseInt(issueNumber, 10)
-    };
-
-    core.info(`Triaging issue #${issueReference.number} in ${issueReference.owner}/${issueReference.repo}`);
-
     // Initialize Mastra
+    const triagerAgent = createTriagerAgent({ systemPrompt });
+    const issueTriagerWorkflow = createTriageIssueWorkflow({ triagerAgent });
     const mastra = new Mastra({
       workflows: { issueTriagerWorkflow },
-      agents: { issueTriagerAgent: triagerAgent },
       storage: new LibSQLStore({
         url: ":memory:",
       }),
@@ -55,6 +40,15 @@ async function run(): Promise<void> {
         level: 'info',
       }),
     });
+
+    // Use current issue from context
+    const issueReference: GithubIssueReference = {
+        owner: github.context.repo.owner,
+        repo: github.context.repo.repo,
+        number: parseInt(issueNumber, 10)
+    };
+
+    core.info(`Triaging issue #${issueReference.number} in ${issueReference.owner}/${issueReference.repo}`);
 
     // Execute the workflow
     const workflow = mastra.getWorkflow("issueTriagerWorkflow");

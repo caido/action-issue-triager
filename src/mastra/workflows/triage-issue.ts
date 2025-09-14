@@ -1,9 +1,11 @@
-import { createStep, createWorkflow } from "@mastra/core";
+import { Agent, createStep, createWorkflow } from "@mastra/core";
 import { GithubIssueReference, GitHubIssueSchema, GithubLabelAssignmentSchema, GitHubLabelSchema } from "../../types";
 import z from "zod";
 import { getIssueTool } from "../tools/get-issue";
 import { getRepositoryLabelsTool } from "../tools/get-repository-labels";
 import { addLabelsTool } from "../tools/add-labels";
+import { buildTriagePrompt } from "../agents/triager.prompt";
+import { createTriagerAgent } from "../agents/triager";
 
 const fetchIssue = createStep(getIssueTool);
 const getAllLabels = createStep(getRepositoryLabelsTool);
@@ -18,8 +20,9 @@ const triage = createStep({
         labels: z.array(GithubLabelAssignmentSchema),
     }),
     execute: async ({inputData: { issue, labels } }) => {
-        console.log(issue, labels);
         const prompt = buildTriagePrompt(issue, labels);
+        const triagerAgent = createTriagerAgent({ systemPrompt: prompt });
+
         const result = await triagerAgent.generate([{
             role: "user",
             content: prompt,
@@ -35,7 +38,12 @@ const triage = createStep({
     },
 });
 
-export const issueTriagerWorkflow = createWorkflow({
+type CreateTriageIssueWorkflowParams = {
+    triagerAgent: Agent;
+}
+
+export const createTriageIssueWorkflow = (options: CreateTriageIssueWorkflowParams) => {
+return createWorkflow({
     id: "issue-triager-workflow",
     description: "A workflow that triages issues",
     inputSchema: z.object({
@@ -74,3 +82,4 @@ export const issueTriagerWorkflow = createWorkflow({
     })
     //.then(addLabels)
     .commit();
+}

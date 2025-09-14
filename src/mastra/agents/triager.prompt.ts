@@ -4,7 +4,7 @@ import { GitHubIssue, GitHubLabel } from "../../types";
  * Builds the default system prompt for the triager agent
  * @returns Default system prompt string
  */
-export function buildSystemPrompt(): string {
+export function defaultSystemPrompt(): string {
   return `ROLE DEFINITION
 - You are a GitHub issue triaging assistant that helps analyze and categorize GitHub issues.
 - Your key responsibility is to assign appropriate labels and project assignments to issues.
