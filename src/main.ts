@@ -3,7 +3,6 @@ import * as github from '@actions/github';
 import * as fs from 'fs';
 import { Mastra } from '@mastra/core/mastra';
 import { PinoLogger } from '@mastra/loggers';
-import { LibSQLStore } from '@mastra/libsql';
 import { createTriageIssueWorkflow } from './mastra/workflows/triage-issue';
 import { createTriagerAgent } from './mastra/agents/triager';
 import { GithubIssueReference } from './types';
@@ -31,9 +30,6 @@ export async function run(): Promise<void> {
     const issueTriagerWorkflow = createTriageIssueWorkflow({ triagerAgent });
     const mastra = new Mastra({
       workflows: { issueTriagerWorkflow },
-      storage: new LibSQLStore({
-        url: ":memory:",
-      }),
       logger: new PinoLogger({
         name: 'Mastra',
         level: 'info',
