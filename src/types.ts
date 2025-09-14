@@ -8,7 +8,7 @@ export const GithubIssueReference = z.object({
 
 export const GitHubLabelSchema = z.object({
   name: z.string(),
-  description: z.string().nullish(),
+  description: z.string(),
 });
 
 export const GithubLabelAssignmentSchema = z.object({

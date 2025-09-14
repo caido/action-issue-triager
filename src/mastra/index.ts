@@ -5,8 +5,9 @@ import { createTriagerAgent } from "./agents/triager";
 import { defaultSystemPrompt } from "./agents/triager.prompt";
 import { createTriageIssueWorkflow } from "./workflows/triage-issue";
 
+const triagePrompt = process.env.TRIAGE_PROMPT;
 const issueTriagerAgent = createTriagerAgent({
-  systemPrompt: defaultSystemPrompt(),
+  systemPrompt: triagePrompt ?? defaultSystemPrompt(),
 });
 const issueTriagerWorkflow = createTriageIssueWorkflow({
   triagerAgent: issueTriagerAgent,

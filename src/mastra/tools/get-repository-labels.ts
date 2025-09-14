@@ -1,6 +1,7 @@
 import { createTool } from "@mastra/core/tools";
-import { z } from "zod";
 import { Octokit } from "octokit";
+import { z } from "zod";
+
 import { GitHubLabelSchema } from "../../types";
 
 export const getRepositoryLabelsTool = createTool({
@@ -31,17 +32,18 @@ export const getRepositoryLabelsTool = createTool({
       // If there are more than 100 labels, we need to paginate
       let allLabels = [...labels];
       let page = 2;
-      
+
       while (labels.length === 100) {
-        const { data: nextPageLabels } = await octokit.rest.issues.listLabelsForRepo({
-          owner,
-          repo,
-          per_page: 100,
-          page,
-        });
-        
+        const { data: nextPageLabels } =
+          await octokit.rest.issues.listLabelsForRepo({
+            owner,
+            repo,
+            per_page: 100,
+            page,
+          });
+
         if (nextPageLabels.length === 0) break;
-        
+
         allLabels = [...allLabels, ...nextPageLabels];
         page++;
       }
@@ -49,14 +51,17 @@ export const getRepositoryLabelsTool = createTool({
       return {
         labels: allLabels.map((label) => ({
           name: label.name,
-          description: label.description,
+          description: label.description ?? "",
         })),
         totalCount: allLabels.length,
       };
     } catch (error) {
       console.error("Error fetching repository labels:", error);
-      const errorMessage = error instanceof Error ? error.message : String(error);
-      throw new Error(`Failed to fetch labels from ${owner}/${repo}: ${errorMessage}`);
+      const errorMessage =
+        error instanceof Error ? error.message : String(error);
+      throw new Error(
+        `Failed to fetch labels from ${owner}/${repo}: ${errorMessage}`,
+      );
     }
   },
 });

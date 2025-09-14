@@ -1,7 +1,12 @@
 import { createTool } from "@mastra/core/tools";
-import { z } from "zod";
 import { Octokit } from "octokit";
-import { GitHubIssue, GithubIssueReference, GitHubIssueSchema } from "../../types";
+import { z } from "zod";
+
+import {
+  type GitHubIssue,
+  GithubIssueReference,
+  GitHubIssueSchema,
+} from "../../types";
 
 export const getIssueTool = createTool({
   id: "get-issue",
@@ -32,18 +37,17 @@ export const getIssueTool = createTool({
           if (typeof label === "string") {
             return {
               name: label,
-              description: null,
+              description: "",
             };
           }
 
           return {
             name: label.name ?? "",
-            description: label.description,
+            description: label.description ?? "",
           };
-
         }),
         title: issue.title,
-        body: issue.body || null,
+        body: issue.body ?? null,
       };
 
       return {
@@ -51,8 +55,11 @@ export const getIssueTool = createTool({
       };
     } catch (error) {
       console.error("Error fetching issue:", error);
-      const errorMessage = error instanceof Error ? error.message : String(error);
-      throw new Error(`Failed to fetch issue #${issueReference.number} from ${issueReference.owner}/${issueReference.repo}: ${errorMessage}`);
+      const errorMessage =
+        error instanceof Error ? error.message : String(error);
+      throw new Error(
+        `Failed to fetch issue #${issueReference.number} from ${issueReference.owner}/${issueReference.repo}: ${errorMessage}`,
+      );
     }
   },
 });

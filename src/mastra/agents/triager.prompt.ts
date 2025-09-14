@@ -44,7 +44,7 @@ export function buildTriagePrompt(
   // Format the available labels for the agent
   const labelsList = availableLabels
     .map((label) => {
-      return `- ${label.name}${label.description === undefined ? `: ${label.description}` : ""}`;
+      return `- ${label.name} ${label.description === "" ? "" : `(${label.description})`}`;
     })
     .join("\n");
 
@@ -52,14 +52,20 @@ export function buildTriagePrompt(
 Recommended labels to add to the issue (choose from the available labels in the repository)
 
 **Issue Details:**
+<IssueDetails>
 - Repository: ${issue.reference.owner}/${issue.reference.repo}
 - Issue #${issue.reference.number}: ${issue.title}
 - Current Labels: ${issue.labels.map((l) => l.name).join(", ") || "None"}
+</IssueDetails>
 
 **Issue Description:**
+<IssueDescription>
 ${issue.body === null || issue.body === "" ? "No description provided" : issue.body}
+</IssueDescription>
 
 **Available Labels in Repository:**
+<LabelList>
 ${labelsList}
+</LabelList>
 `;
 }
