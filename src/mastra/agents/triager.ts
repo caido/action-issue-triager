@@ -1,10 +1,10 @@
-import { Agent } from "@mastra/core/agent";
 import { openai } from "@ai-sdk/openai";
+import { Agent } from "@mastra/core/agent";
 import { PromptInjectionDetector } from "@mastra/core/processors";
 
 type CreateTriagerAgentParams = {
   systemPrompt: string;
-}
+};
 
 /**
  * Creates a triager agent with the specified prompt
@@ -17,9 +17,11 @@ export const createTriagerAgent = (options: CreateTriagerAgentParams) => {
     name: "GitHub Issue Triager Agent",
     instructions: systemPrompt,
     model: openai("gpt-5-nano"),
-    tools: { },
-    inputProcessors: [new PromptInjectionDetector({
-      model: openai("gpt-5-nano"),
-    })],
+    tools: {},
+    inputProcessors: [
+      new PromptInjectionDetector({
+        model: openai("gpt-5-nano"),
+      }),
+    ],
   });
-}
+};

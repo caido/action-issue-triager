@@ -1,6 +1,7 @@
 import { createTool } from "@mastra/core/tools";
 import { z } from "zod";
 import { Octokit } from "octokit";
+import { GitHubLabelSchema } from "../../types";
 
 export const getRepositoryLabelsTool = createTool({
   id: "get-repository-labels",
@@ -10,11 +11,7 @@ export const getRepositoryLabelsTool = createTool({
     repo: z.string().describe("Repository name"),
   }),
   outputSchema: z.object({
-    labels: z.array(z.object({
-      name: z.string(),
-      color: z.string(),
-      description: z.string().nullable(),
-    })),
+    labels: z.array(GitHubLabelSchema),
     totalCount: z.number(),
   }),
   execute: async ({ context: { owner, repo } }) => {
@@ -50,9 +47,8 @@ export const getRepositoryLabelsTool = createTool({
       }
 
       return {
-        labels: allLabels.map((label: any) => ({
+        labels: allLabels.map((label) => ({
           name: label.name,
-          color: label.color,
           description: label.description,
         })),
         totalCount: allLabels.length,

@@ -1,4 +1,4 @@
-import { GitHubIssue, GitHubLabel } from "../../types";
+import { type GitHubIssue, type GitHubLabel } from "../../types";
 
 /**
  * Builds the default system prompt for the triager agent
@@ -42,23 +42,24 @@ export function buildTriagePrompt(
   availableLabels: GitHubLabel[],
 ): string {
   // Format the available labels for the agent
-  const labelsList = availableLabels.map(label => 
-    `- ${label.name}${label.description ? `: ${label.description}` : ''}`
-  ).join('\n');
-  
+  const labelsList = availableLabels
+    .map((label) => {
+      return `- ${label.name}${label.description === undefined ? `: ${label.description}` : ""}`;
+    })
+    .join("\n");
+
   return `
 Recommended labels to add to the issue (choose from the available labels in the repository)
 
 **Issue Details:**
 - Repository: ${issue.reference.owner}/${issue.reference.repo}
 - Issue #${issue.reference.number}: ${issue.title}
-- Current Labels: ${issue.labels.map(l => l.name).join(', ') || 'None'}
+- Current Labels: ${issue.labels.map((l) => l.name).join(", ") || "None"}
 
 **Issue Description:**
-${issue.body || 'No description provided'}
+${issue.body === null || issue.body === "" ? "No description provided" : issue.body}
 
 **Available Labels in Repository:**
 ${labelsList}
-
 `;
 }
