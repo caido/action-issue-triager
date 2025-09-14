@@ -1,5 +1,4 @@
 import { createStep, createWorkflow } from "@mastra/core";
-import { triagerAgent, buildTriagePrompt } from "../agents/triager";
 import { GithubIssueReference, GitHubIssueSchema, GithubLabelAssignmentSchema, GitHubLabelSchema } from "../../types";
 import z from "zod";
 import { getIssueTool } from "../tools/get-issue";
