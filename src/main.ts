@@ -65,7 +65,14 @@ export async function run(): Promise<void> {
 
       // Log results
       core.info(`Successfully triaged issue #${issueReference.number}`);
-      core.info(`Recommended labels: ${result.result.labels.map(l => l.name).join(', ')}`);
+      core.summary.addHeading(`Triage Summary`);
+      core.summary.addRaw(`Issue #${issueReference.number}`, true);
+      core.summary.addRaw(`Repository: ${issueReference.owner}/${issueReference.repo}`, true);
+      core.summary.addRaw(`Recommended labels:`, true);
+      for (const label of result.result.labels) {
+        core.summary.addRaw(`- ${label.name} - ${label.reason}`, true);
+      }
+
     } else if (result.status === 'failed') {
       throw new Error(`Workflow failed: ${result.error || 'Unknown error'}`);
     } else if (result.status === 'suspended') {
