@@ -21,7 +21,7 @@ export async function run(): Promise<void> {
     // Validate system prompt file exists
     const systemPromptFilePath = path.join(process.env.GITHUB_WORKSPACE!, systemPromptFile);
     if (!fs.existsSync(systemPromptFilePath)) {
-      throw new Error(`System prompt file not found: ${systemPromptFile}`);
+      throw new Error(`System prompt file not found: ${systemPromptFilePath}`);
     }
 
     // Read system prompt
