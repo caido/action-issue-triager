@@ -58,19 +58,18 @@ export async function run(): Promise<void> {
 
     // Check workflow result status
     if (result.status === 'success') {
-      // Set outputs
-      core.setOutput('labels', JSON.stringify(result.result.labels));
-      core.setOutput('issue-number', issueReference.number);
-      core.setOutput('repository', `${issueReference.owner}/${issueReference.repo}`);
-
-      // Log results
-      core.info(`Successfully triaged issue #${issueReference.number}`);
-      core.summary.addHeading(`Triage Summary`);
-      core.summary.addRaw(`Issue #${issueReference.number}`, true);
-      core.summary.addRaw(`Repository: ${issueReference.owner}/${issueReference.repo}`, true);
-      core.summary.addRaw(`Recommended labels:`, true);
-      for (const label of result.result.labels) {
-        core.summary.addRaw(`- ${label.name} - ${label.reason}`, true);
+      if (result.result.success) {
+        // Log results
+        core.info(`Successfully triaged issue #${issueReference.number}`);
+        core.summary.addHeading(`Triage Summary`);
+        core.summary.addRaw(`Issue #${issueReference.number}`, true);
+        core.summary.addRaw(`Repository: ${issueReference.owner}/${issueReference.repo}`, true);
+        core.summary.addRaw(`Recommended labels:`, true);
+        for (const label of result.result.labels) {
+          core.summary.addRaw(`- ${label.name} - ${label.reason}`, true);
+        }
+      } else {
+        core.error(`Failed to triage issue #${issueReference.number}: ${result.result.message}`);
       }
 
     } else if (result.status === 'failed') {

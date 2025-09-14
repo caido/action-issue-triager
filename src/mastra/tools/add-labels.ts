@@ -11,7 +11,8 @@ export const addLabelsTool = createTool({
     labels: z.array(GithubLabelAssignmentSchema).describe("Array of label to add"),
   }),
   outputSchema: z.object({
-    labels: z.array(GithubLabelAssignmentSchema),
+    success: z.boolean(),
+    message: z.string(),
   }),
   execute: async ({ context: { issueReference, labels } }) => {
     try {
@@ -30,13 +31,15 @@ export const addLabelsTool = createTool({
       });
 
       return {
-        labels,
+        success: true,
+        message: `Successfully added labels: ${labels.map((label) => label.name).join(", ")} to issue #${issueReference.number}`,
       };
     } catch (error) {
       console.error("Error adding labels:", error);
       const errorMessage = error instanceof Error ? error.message : String(error);
       return {
-        labels,
+        success: false,
+        message: `Failed to add labels to issue #${issueReference.number}: ${errorMessage}`,
       };
     }
   },

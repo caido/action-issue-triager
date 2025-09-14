@@ -50,6 +50,8 @@ return createWorkflow({
         issueReference: GithubIssueReference,
     }),
     outputSchema: z.object({
+        success: z.boolean(),
+        message: z.string(),
         labels: z.array(GithubLabelAssignmentSchema),
     }),
 })
@@ -81,5 +83,14 @@ return createWorkflow({
         };
     })
     .then(addLabels)
+    .map(async ({ getStepResult }) => {
+        const { labels } = getStepResult(triage);
+        const { success, message } = getStepResult(addLabels);
+        return {
+            labels,
+            success,
+            message,
+        };
+    })
     .commit();
 }
