@@ -1,5 +1,5 @@
 import { defineConfig } from 'tsdown'
 
 export default defineConfig({
-  entry: ['./src/action.ts'],
+  entry: ['./src/index.ts'],
 })

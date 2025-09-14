@@ -12,10 +12,6 @@ inputs:
   system-prompt-file:
     description: 'Path to the system prompt file'
     required: true
-  github-token:
-    description: 'GitHub token for API access'
-    required: true
-    default: ${{ github.token }}
   issue-number:
     description: 'Issue number to triage (if not provided, will use the current issue)'
     required: true
