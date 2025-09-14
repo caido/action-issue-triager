@@ -63,15 +63,20 @@ export async function run(): Promise<void> {
         core.info(`Successfully triaged issue #${issueReference.number}`);
         const summary = core.summary.emptyBuffer();
         summary.addHeading(`Triage Summary`);
-        summary.addRaw(`Issue #${issueReference.number}`, true);
-        summary.addRaw(`Repository: ${issueReference.owner}/${issueReference.repo}`, true);
-        summary.addRaw(`Recommended labels:`, true);
-        for (const label of result.result.labels) {
-          summary.addRaw(`- ${label.name} - ${label.reason}`, true);
-        }
+        summary.addRaw(`Issue #${issueReference.number}`);
+        summary.addBreak();
+        summary.addRaw(`Repository: ${issueReference.owner}/${issueReference.repo}`);
+        summary.addBreak();
+        summary.addHeading(`Assigned labels`, 2);
+
+        const dataTable = result.result.labels.map((label) => [label.name, label.reason]);
+        summary.addTable([
+          [{ data: 'Label', header: true }, { data: 'Reason', header: true }],
+          ...dataTable
+        ]);
         summary.write();
       } else {
-        core.error(`Failed to triage issue #${issueReference.number}: ${result.result.message}`);
+        throw new Error(`Failed to triage issue #${issueReference.number}: ${result.result.message}`);
       }
 
     } else if (result.status === 'failed') {
@@ -90,6 +95,3 @@ export async function run(): Promise<void> {
     }
   }
 }
-
-// Run the action
-run();
