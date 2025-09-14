@@ -1,14 +1,14 @@
 import { createTool } from "@mastra/core/tools";
 import { z } from "zod";
 import { Octokit } from "octokit";
-import { GithubIssueReference, GitHubLabel, GitHubLabelSchema } from "../../types";
+import { GithubIssueReference, GitHubLabel, GithubLabelAssignmentSchema, GitHubLabelSchema } from "../../types";
 
 export const addLabelsTool = createTool({
   id: "add-labels",
   description: "Add labels to a GitHub issue",
   inputSchema: z.object({
     issueReference: GithubIssueReference,
-    labels: z.array(GitHubLabelSchema).describe("Array of label names to add"),
+    labels: z.array(GithubLabelAssignmentSchema).describe("Array of label to add"),
   }),
   outputSchema: z.object({
     success: z.boolean(),
@@ -22,11 +22,12 @@ export const addLabelsTool = createTool({
       });
 
       // Add labels to the issue
+      const labelNames = labels.map((label) => label.name);
       const { data: issue } = await octokit.rest.issues.addLabels({
         owner: issueReference.owner,
         repo: issueReference.repo,
         issue_number: issueReference.number,
-        labels,
+        labels: labelNames,
       });
 
       return {

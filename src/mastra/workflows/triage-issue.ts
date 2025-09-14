@@ -1,6 +1,6 @@
 import { createStep, createWorkflow } from "@mastra/core";
 import { triagerAgent, buildTriagePrompt } from "../agents/triager";
-import { GithubIssueReference, GitHubIssueSchema, GitHubLabelSchema } from "../../types";
+import { GithubIssueReference, GitHubIssueSchema, GithubLabelAssignmentSchema, GitHubLabelSchema } from "../../types";
 import z from "zod";
 import { getIssueTool } from "../tools/get-issue";
 import { getRepositoryLabelsTool } from "../tools/get-repository-labels";
@@ -8,6 +8,7 @@ import { addLabelsTool } from "../tools/add-labels";
 
 const fetchIssue = createStep(getIssueTool);
 const getAllLabels = createStep(getRepositoryLabelsTool);
+const addLabels = createStep(addLabelsTool);
 const triage = createStep({
     id: "triage",
     inputSchema: z.object({
@@ -15,16 +16,17 @@ const triage = createStep({
         labels: z.array(GitHubLabelSchema),
     }),
     outputSchema: z.object({
-        labels: z.array(GitHubLabelSchema),
+        labels: z.array(GithubLabelAssignmentSchema),
     }),
     execute: async ({inputData: { issue, labels } }) => {
+        console.log(issue, labels);
         const prompt = buildTriagePrompt(issue, labels);
         const result = await triagerAgent.generate([{
             role: "user",
             content: prompt,
         }], {
             output: z.object({
-                labels: z.array(GitHubLabelSchema),
+                labels: z.array(GithubLabelAssignmentSchema),
             }),
         });
 
@@ -41,15 +43,15 @@ export const issueTriagerWorkflow = createWorkflow({
         issueReference: GithubIssueReference,
     }),
     outputSchema: z.object({
-        labels: z.array(GitHubLabelSchema),
+        labels: z.array(GithubLabelAssignmentSchema),
     }),
 })
     .then(fetchIssue)
     .map(async ({ getInitData }) => {
-        const initData = getInitData();
+        const initData = getInitData() as { issueReference: GithubIssueReference };
         return {
-            owner: initData.owner,
-            repo: initData.repo,
+            owner: initData.issueReference.owner,
+            repo: initData.issueReference.repo,
         };
     })
     .then(getAllLabels)
@@ -64,11 +66,12 @@ export const issueTriagerWorkflow = createWorkflow({
     })
     .then(triage)
     .map(async ({ getInitData, getStepResult }) => {
-        const initData = getInitData();
-        const triageResult = getStepResult(triage);
+        const { issueReference } = getInitData() as { issueReference: GithubIssueReference };
+        const { labels } = getStepResult(triage);
         return {
-            issueReference: initData.issueReference,
-            labels: triageResult.labels,
+            issueReference,
+            labels,
         };
     })
+    //.then(addLabels)
     .commit();

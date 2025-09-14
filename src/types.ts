@@ -11,6 +11,11 @@ export const GitHubLabelSchema = z.object({
   description: z.string().nullish(),
 });
 
+export const GithubLabelAssignmentSchema = z.object({
+  name: z.string(),
+  reason: z.string(),
+});
+
 export const GitHubIssueSchema = z.object({
   reference: GithubIssueReference,
   title: z.string(),
