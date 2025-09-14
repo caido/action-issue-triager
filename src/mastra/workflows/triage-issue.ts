@@ -80,6 +80,6 @@ return createWorkflow({
             labels,
         };
     })
-    //.then(addLabels)
+    .then(addLabels)
     .commit();
 }
