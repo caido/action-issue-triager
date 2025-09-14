@@ -6,6 +6,7 @@ import { PinoLogger } from '@mastra/loggers';
 import { createTriageIssueWorkflow } from './mastra/workflows/triage-issue';
 import { createTriagerAgent } from './mastra/agents/triager';
 import { GithubIssueReference } from './types';
+import path from 'path';
 
 export async function run(): Promise<void> {
   try {
@@ -18,12 +19,13 @@ export async function run(): Promise<void> {
     process.env.OPENAI_API_KEY = openaiKey;
 
     // Validate system prompt file exists
-    if (!fs.existsSync(systemPromptFile)) {
+    const systemPromptFilePath = path.join(process.env.GITHUB_WORKSPACE!, systemPromptFile);
+    if (!fs.existsSync(systemPromptFilePath)) {
       throw new Error(`System prompt file not found: ${systemPromptFile}`);
     }
 
     // Read system prompt
-    const systemPrompt = fs.readFileSync(systemPromptFile, 'utf8');
+    const systemPrompt = fs.readFileSync(systemPromptFilePath, 'utf8');
     
     // Initialize Mastra
     const triagerAgent = createTriagerAgent({ systemPrompt });
